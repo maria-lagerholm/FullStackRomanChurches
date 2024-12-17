@@ -1,3 +1,19 @@
+st.markdown("""
+<style>
+/* Reduce padding on smaller screens */
+@media only screen and (max-width: 600px) {
+    .block-container {
+        padding: 0.5rem 0.5rem 0.5rem 0.5rem !important;
+    }
+    /* Optionally reduce font sizes */
+    body, .stApp {
+        font-size: 14px !important;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 import os
 import streamlit as st
 import pandas as pd
@@ -5,6 +21,8 @@ import plotly.express as px
 from sqlalchemy import create_engine, text
 from pymssql import connect
 
+
+st.set_page_config(layout="wide")
 
 # ------------------------------------------------------------------------
 # Set up secure database credentials based on environment
@@ -170,9 +188,9 @@ fig3.update_layout(
 st.title("Roman Churches Insights")
 
 # Display the figures
-st.plotly_chart(fig1)
-st.plotly_chart(fig2)
-st.plotly_chart(fig3)
+st.plotly_chart(fig1, use_container_width=True)
+st.plotly_chart(fig2, use_container_width=True)
+st.plotly_chart(fig3, use_container_width=True)
 
 # Allow the user to pick a century and view church details from that period
 centuries_df = pd.read_sql_query(
