@@ -12,6 +12,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# Inject custom CSS for the selectbox border
 st.markdown("""
     <style>
     /* Adjust font sizes for better readability on mobile */
@@ -26,19 +27,22 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
 
-    /* Custom styling */
+    /* Custom styling for the app container */
     .stApp {
         max-width: 1200px;
         margin: 0 auto;
     }
+
+    /* Style the selectbox container */
+    [data-baseweb="select"] > div {
+        border: 2px solid #0067C8 !important;
+        border-radius: 4px !important;
+    }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # ------------------------------------------------------------------------
 # Set up secure database credentials based on environment
-#
-# For local testing, credentials may be set in environment variables.
-# For deployment on Streamlit Cloud, credentials should come from st.secrets.
 # ------------------------------------------------------------------------
 if "AZURE_SQL_PASSWORD" in os.environ:
     # Running locally: use environment variables
@@ -53,27 +57,15 @@ else:
     server = st.secrets["azure_sql"]["server"]
     database = st.secrets["azure_sql"]["database"]
 
-# Create the Azure SQL Database connection string
-# azure_connection = (
-#     f"mssql+pyodbc://{username}:{password}@{server}/{database}"
-#     "?driver=ODBC+Driver+18+for+SQL+Server"
-# )
-
 azure_connection = f"mssql+pymssql://{username}:{password}@{server}/{database}"
-
 engine = create_engine(azure_connection)
 
 # ------------------------------------------------------------------------
 # Figure 1: Count how many churches were built each century
 # ------------------------------------------------------------------------
-query_count = """
-    SELECT built_century, COUNT(*) AS count 
-    FROM RomanChurches_Main 
-    GROUP BY built_century
-"""
+query_count = "SELECT built_century, COUNT(*) AS count FROM RomanChurches_Main GROUP BY built_century"
 df_count = pd.read_sql_query(text(query_count), engine)
 
-# We ensure all centuries up to 21 are included, even if count is zero
 all_centuries = list(range(1, 22))
 df_plot1 = pd.DataFrame({'built_century': all_centuries}).merge(
     df_count, on='built_century', how='left'
@@ -86,71 +78,41 @@ fig1 = px.bar(
     title='Number of Churches Built in Rome per Century',
     text='count'
 )
-fig1.update_layout(
-    xaxis_title="Century",
-    yaxis_title="Count",
-    xaxis=dict(dtick=1)
-)
+fig1.update_layout(xaxis_title="Century", yaxis_title="Count", xaxis=dict(dtick=1))
 
 # ------------------------------------------------------------------------
-# Figure 2: Population of Rome per century (interpolated) with event markers
-#
-# We take recorded population data, ensure we have a full range of centuries,
-# interpolate missing population data, and annotate events.
-# Source: https://en.wikipedia.org/wiki/Rome
+# Figure 2: Population of Rome per century (interpolated)
 # ------------------------------------------------------------------------
 df_pop = pd.read_sql("SELECT Century, Event, Population FROM RomanPopulation", engine)
-
-# Prepare a full century range from -8 to 21 (including early centuries)
 centuries_full = pd.DataFrame({'Century': list(range(-8, 22))})
-
-# Ensure century column is int and filter to requested range
 df_pop['Century'] = df_pop['Century'].astype(int)
 df_pop = df_pop[df_pop['Century'] <= 21]
 
-# Interpolate missing population values for a smooth line
 df_merged = centuries_full.merge(
     df_pop[['Century', 'Population']],
     on='Century', how='left'
 ).interpolate()
 
-# Keep event data separate, then merge back with interpolated data
 df_events = df_pop[['Century', 'Event']].dropna()
 df_plot2 = df_merged.merge(df_events, on='Century', how='left')
 df_plot2['Event'] = df_plot2['Event'].fillna('')
-
-# Assign event IDs for labeling
 events_df = df_plot2[df_plot2['Event'] != ''].copy()
 events_df['Event_ID'] = range(1, len(events_df) + 1)
 df_plot2 = df_plot2.merge(events_df[['Century', 'Event', 'Event_ID']], on=['Century', 'Event'], how='left')
 df_plot2 = df_plot2.sort_values('Century')
 
-# Create a line plot of population over time
-fig2 = px.line(
-    df_plot2,
-    x='Century',
-    y='Population',
-    title='Population of Rome per Century (Interpolated)',
-    markers=True
-)
+fig2 = px.line(df_plot2, x='Century', y='Population', title='Population of Rome per Century (Interpolated)', markers=True)
 
-# Add annotations for events
 for _, row in df_plot2.dropna(subset=['Event_ID']).iterrows():
     fig2.add_annotation(
         x=row['Century'], 
         y=row['Population'],
         text=str(int(row['Event_ID'])),
-        showarrow=True, 
-        arrowhead=2, 
-        ax=0, 
-        ay=-50,
+        showarrow=True, arrowhead=2, ax=0, ay=-50,
         font=dict(size=14, color='black'),
-        arrowcolor='gray', 
-        xanchor='center', 
-        yanchor='top'
+        arrowcolor='gray', xanchor='center', yanchor='top'
     )
 
-# Create a legend that maps event IDs to their descriptions
 event_list = "<br>".join([f"• {int(eID)}: {event}" for eID, event in zip(events_df['Event_ID'], events_df['Event'])])
 fig2.add_annotation(
     x=0.01, y=0.99, xref='paper', yref='paper',
@@ -168,7 +130,7 @@ fig2.update_layout(
 )
 
 # ------------------------------------------------------------------------
-# Figure 3: Count how many churches are dedicated to Mary each century
+# Figure 3: Churches Dedicated to Mary per Century
 # ------------------------------------------------------------------------
 query_mary = """
     SELECT m.built_century, COUNT(*) AS count
@@ -186,43 +148,24 @@ fig3 = px.bar(
     title='Number of Churches Dedicated to the Virgin Mary per Century',
     text='count'
 )
-fig3.update_layout(
-    xaxis_title="Century",
-    yaxis_title="Count",
-    xaxis=dict(dtick=1)
-)
+fig3.update_layout(xaxis_title="Century", yaxis_title="Count", xaxis=dict(dtick=1))
 
 # ------------------------------------------------------------------------
 # Streamlit Layout
 # ------------------------------------------------------------------------
 st.title("Roman Churches Insights")
 
-
-st.markdown(
-    """
-    <style>
-    /* Style the selectbox to have a dark blue outline */
-    div[data-testid="stSelectbox"] > div:first-child {
-        border: 2px solid darkblue;
-        border-radius: 5px;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-# Allow the user to pick a century and view church details from that period with a dropdown menu outlined in dark blue
 centuries_df = pd.read_sql_query(
     text("SELECT DISTINCT built_century FROM RomanChurches_Main ORDER BY built_century"),
     engine
 )
+
 selected_century = st.selectbox(
     "Select a Century to view what churches were built at that time in Rome",
     centuries_df['built_century'],
     key="century_selectbox"
 )
 
-# Retrieve details about churches built in the selected century
 details_query = text("""
     SELECT m.englishname, m.address, d.architect, d.dedication, d.artists
     FROM RomanChurches_Main m
@@ -231,9 +174,8 @@ details_query = text("""
 """)
 df_details = pd.read_sql_query(details_query, engine, params={"selected_century": selected_century})
 
-# Display the figures
 st.plotly_chart(fig1, use_container_width=True)
 st.plotly_chart(fig2, use_container_width=True)
 st.plotly_chart(fig3, use_container_width=True)
-# Show the detailed church information in a table
+
 st.dataframe(df_details)
