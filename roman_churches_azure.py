@@ -198,12 +198,29 @@ fig3.update_layout(
 st.title("Roman Churches Insights")
 
 
-# Allow the user to pick a century and view church details from that period
+st.markdown(
+    """
+    <style>
+    /* Style the selectbox to have a dark blue outline */
+    div[data-testid="stSelectbox"] > div:first-child {
+        border: 2px solid darkblue;
+        border-radius: 5px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Allow the user to pick a century and view church details from that period with a dropdown menu outlined in dark blue
 centuries_df = pd.read_sql_query(
     text("SELECT DISTINCT built_century FROM RomanChurches_Main ORDER BY built_century"),
     engine
 )
-selected_century = st.selectbox("Select a Century to view what churches were built at that time in Rome", centuries_df['built_century'])
+selected_century = st.selectbox(
+    "Select a Century to view what churches were built at that time in Rome",
+    centuries_df['built_century'],
+    key="century_selectbox"
+)
 
 # Retrieve details about churches built in the selected century
 details_query = text("""
