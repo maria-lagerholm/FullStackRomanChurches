@@ -203,7 +203,7 @@ centuries_df = pd.read_sql_query(
     text("SELECT DISTINCT built_century FROM RomanChurches_Main ORDER BY built_century"),
     engine
 )
-selected_century = st.selectbox("Select a Century", centuries_df['built_century'])
+selected_century = st.selectbox("Select a Century to view what churches were built at that time in Rome", centuries_df['built_century'])
 
 # Retrieve details about churches built in the selected century
 details_query = text("""
