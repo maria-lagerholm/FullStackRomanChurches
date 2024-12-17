@@ -1,18 +1,3 @@
-import streamlit as st
-
-# Custom CSS to ensure the background is white
-st.markdown(
-    """
-    <style>
-        body, .stApp {
-            background-color: white !important;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-
 import os
 import streamlit as st
 import pandas as pd
