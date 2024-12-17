@@ -1,3 +1,10 @@
+import os
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+from sqlalchemy import create_engine, text
+from pymssql import connect
+
 st.markdown("""
 <style>
 /* Reduce padding on smaller screens */
@@ -12,16 +19,6 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
-
-
-import os
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-from sqlalchemy import create_engine, text
-from pymssql import connect
-
-
 st.set_page_config(layout="wide")
 
 # ------------------------------------------------------------------------
