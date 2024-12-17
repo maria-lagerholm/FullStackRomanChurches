@@ -197,11 +197,6 @@ fig3.update_layout(
 # ------------------------------------------------------------------------
 st.title("Roman Churches Insights")
 
-# Display the figures
-st.plotly_chart(fig3, use_container_width=True)
-st.plotly_chart(fig1, use_container_width=True)
-st.plotly_chart(fig2, use_container_width=True)
-
 
 # Allow the user to pick a century and view church details from that period
 centuries_df = pd.read_sql_query(
@@ -219,5 +214,9 @@ details_query = text("""
 """)
 df_details = pd.read_sql_query(details_query, engine, params={"selected_century": selected_century})
 
+# Display the figures
+st.plotly_chart(fig1, use_container_width=True)
+st.plotly_chart(fig2, use_container_width=True)
+st.plotly_chart(fig3, use_container_width=True)
 # Show the detailed church information in a table
 st.dataframe(df_details)
