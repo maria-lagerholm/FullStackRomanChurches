@@ -173,9 +173,9 @@ details_query = text("""
     WHERE m.built_century = :selected_century
 """)
 df_details = pd.read_sql_query(details_query, engine, params={"selected_century": selected_century})
+st.dataframe(df_details)
 
 st.plotly_chart(fig1, use_container_width=True)
 st.plotly_chart(fig2, use_container_width=True)
 st.plotly_chart(fig3, use_container_width=True)
 
-st.dataframe(df_details)
