@@ -13,30 +13,26 @@ st.set_page_config(
 )
 
 st.markdown("""
-<style>
-/* Reduce padding on smaller screens */
-@media only screen and (max-width: 600px) {
-    .block-container {
-        padding: 0.5rem 0.5rem 0.5rem 0.5rem !important;
+    <style>
+    /* Adjust font sizes for better readability on mobile */
+    @media only screen and (max-width: 600px) {
+        body, .stApp {
+            font-size: 14px !important;
+        }
     }
-    /* Optionally reduce font sizes */
-    body, .stApp {
-        font-size: 14px !important;
+
+    /* Hide Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+
+    /* Custom styling */
+    .stApp {
+        max-width: 1200px;
+        margin: 0 auto;
     }
-}
-
-/* Hide Streamlit branding */
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-header {visibility: hidden;}
-
-/* Custom styling */
-.stApp {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-</style>
-""", unsafe_allow_html=True)
+    </style>
+    """, unsafe_allow_html=True)
 
 # ------------------------------------------------------------------------
 # Set up secure database credentials based on environment
