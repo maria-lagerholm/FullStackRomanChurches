@@ -5,6 +5,13 @@ import plotly.express as px
 from sqlalchemy import create_engine, text
 from pymssql import connect
 
+st.set_page_config(
+    layout="wide",
+    page_title="Roman Churches Insights",
+    page_icon="⛪",
+    initial_sidebar_state="collapsed"
+)
+
 st.markdown("""
 <style>
 /* Reduce padding on smaller screens */
@@ -17,9 +24,19 @@ st.markdown("""
         font-size: 14px !important;
     }
 }
+
+/* Hide Streamlit branding */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+
+/* Custom styling */
+.stApp {
+    max-width: 1200px;
+    margin: 0 auto;
+}
 </style>
 """, unsafe_allow_html=True)
-st.set_page_config(layout="wide")
 
 # ------------------------------------------------------------------------
 # Set up secure database credentials based on environment
