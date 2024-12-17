@@ -3,6 +3,8 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from sqlalchemy import create_engine, text
+from pymssql import connect
+
 
 # ------------------------------------------------------------------------
 # Set up secure database credentials based on environment
@@ -24,10 +26,13 @@ else:
     database = st.secrets["azure_sql"]["database"]
 
 # Create the Azure SQL Database connection string
-azure_connection = (
-    f"mssql+pyodbc://{username}:{password}@{server}/{database}"
-    "?driver=ODBC+Driver+18+for+SQL+Server"
-)
+# azure_connection = (
+#     f"mssql+pyodbc://{username}:{password}@{server}/{database}"
+#     "?driver=ODBC+Driver+18+for+SQL+Server"
+# )
+
+azure_connection = f"mssql+pymssql://{username}:{password}@{server}/{database}"
+
 engine = create_engine(azure_connection)
 
 # ------------------------------------------------------------------------
